@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender with PDFs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f8f4 0%, #d9f1ec 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0f3d35;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 760px;
+            padding: 42px;
+            border: 1px solid rgba(0, 121, 97, 0.08);
+        }
+
+        h1 {
+            color: #004d40;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #23554e;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00796b;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1f4e45;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="file"],
+        input[type="email"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #c8e3dd;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #f7fdfb;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        input[type="file"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #26a69a;
+            box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.12);
+            background: #ffffff;
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 120px;
+        }
+
+        .file-info {
+            font-size: 13px;
+            color: #4f6b64;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px 16px;
+            background: #00796b;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .secondary-btn {
+            background: #dff3ef;
+            color: #0f3d35;
+            border: 1px solid #b8e5db;
+        }
+
+        .secondary-btn:hover:not(:disabled) {
+            background: #ccebe4;
+        }
+
+        .preview-section {
+            background: #f4fcfb;
+            padding: 18px;
+            border-radius: 14px;
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #c8e3dd;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .preview-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #00796b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .preview-content {
+            background: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1f4e45;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            background: #ddf4e9;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #fdebec;
+            color: #9a2f2c;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #e8f6f2;
+            color: #0f4f48;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-section.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0ede9;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00796b 0%, #26a69a 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: #23554e;
+            text-align: center;
+        }
+
+        .results {
+            margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .results-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+        }
+
+        .results-sent {
+            background: #ddf4e9;
+            color: #155724;
+        }
+
+        .results-failed {
+            background: #fde7e8;
+            color: #9c2f33;
+        }
+
+        .subject-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #c8e3dd;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #f7fdfb;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+            margin-bottom: 12px;
+        }
+
+        .subject-input:focus {
+            outline: none;
+            border-color: #26a69a;
+            box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.12);
+            background: #ffffff;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: space-between;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            color: #5b6b67;
+            padding: 12px 0;
+            border-bottom: 2px solid #d5eae5;
+            position: relative;
+        }
+
+        .step.active {
+            color: #00796b;
+            border-bottom-color: #00796b;
+        }
+
+        .step.completed {
+            color: #00796b;
+            border-bottom-color: #00796b;
+        }
+        .topnav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #e8f7f1;
+            border: 1px solid #c8e6e0;
+        }
+        .user-label {
+            color: #23554e;
+            font-size: 14px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .nav-link {
+            color: #00796b;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        .auth-note {
+            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: 16px;
+            background: #e7f7f4;
+            color: #23554e;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid #c7e6df;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Email Sender with PDFs</h1>
+        <p class="subtitle">Send personalized emails with attachments to 1000+ recipients</p>
+
+        <div class="topnav">
+            {% if user_info.is_authenticated %}
+            <div class="user-label">Signed in as <strong>{{ user_info.username }}</strong></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                {% if user_info.is_paid %}
+                <div style="background:#dff3ef; padding:8px 12px; border-radius:12px; color:#0f4f48; font-weight:700;">Subscription: {{ user_info.days_left }} days left</div>
+                {% else %}
+                <div style="background:#fdeceb; padding:8px 12px; border-radius:12px; color:#9c2f33; font-weight:700;">Not active — Please pay</div>
+                {% endif %}
+            </div>
+            <div class="nav-links">
+                <a class="nav-link" href="/account">Account</a>
+                {% if user_info.is_admin %}
+                <a class="nav-link" href="/admin">Admin</a>
+                {% endif %}
+                <a class="nav-link" href="/logout">Logout</a>
+            </div>
+            {% else %}
+            <div class="nav-links">
+                <a class="nav-link" href="/login">Login</a>
+                <a class="nav-link" href="/register">Register</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if user_info.is_authenticated %}
+        <div class="auth-note">Using your saved account credentials. You can update your app password in your <a href="/account">Account</a>. {% if user_info.is_paid %}Subscription expires: {{ user_info.paid_until }}{% endif %}</div>
+        {% endif %}
+
+        <div class="step-indicator">
+            <div class="step active" id="step1">1. Upload Files</div>
+            <div class="step" id="step2">2. Preview</div>
+            <div class="step" id="step3">3. Send</div>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <!-- Step 1: Upload Files -->
+        <div id="uploadSection">
+            <div class="form-section">
+                <div class="section-title">📊 Excel File</div>
+                <label for="excelFile">Excel File with Emails (Column 2)</label>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" required>
+                <div class="file-info">Format: Column 1 = Name, Column 2 = Email</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">📁 PDF Folder</div>
+                <label for="pdfFolder">Select PDF Folder (or files)</label>
+                <input type="file" id="pdfFolder" webkitdirectory directory multiple required accept=".pdf">
+                <div class="file-info">Name PDFs as: email_username.pdf (e.g., john.pdf). You may select a folder (Chrome/Edge support folder upload).</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">✉️ Email Subject</div>
+                <label for="emailSubject">Subject</label>
+                <input class="subject-input" type="text" id="emailSubject" placeholder="Enter email subject" value="{{ user_info.subject|e }}" />
+                <div class="file-info">Set a subject line to reduce spam filtering and personalize each send.</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">💬 Message Template</div>
+                <label for="messageTemplate">Message (use {name} and {timestamp})</label>
+                <textarea id="messageTemplate" placeholder="Hello {name},&#10;&#10;Sent on {timestamp}.&#10;&#10;This is a personalized message for you..." required>{{ user_info.template|e }}</textarea>
+                <button type="button" class="secondary-btn" onclick="previewMessage()">👁️ Preview Message</button>
+            </div>
+
+            <div class="preview-section" id="previewSection">
+                <div class="preview-title">Preview</div>
+                <div class="preview-content" id="previewContent"></div>
+            </div>
+
+            <button type="button" onclick="uploadFiles()">✅ Upload & Validate</button>
+        </div>
+
+        <!-- Step 2: Send Configuration -->
+        <div id="configSection" style="display: none;">
+            <div class="form-section">
+                <div class="section-title">📧 Sender Credentials</div>
+                <label for="senderEmail">Gmail Address</label>
+                <input type="email" id="senderEmail" placeholder="your-email@gmail.com" required>
+                
+                <div id="senderPasswordGroup">
+                    <label for="senderPassword">App Password (Gmail)</label>
+                    <input type="password" id="senderPassword" placeholder="Generated app password from Gmail" required>
+                </div>
+                <div class="file-info">
+                    💡 Generate app password:
+                    <br>1. Go to <strong>myaccount.google.com</strong>
+                    <br>2. Security → 2-Step Verification (enable if not)
+                    <br>3. Device passwords → Generate
+                </div>
+            </div>
+
+            <div id="summarySection" style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <strong style="color: #333;">Summary:</strong>
+                <p>📊 Emails to send: <span id="emailCount">0</span></p>
+                <p>📁 PDFs found: <span id="pdfCount">0</span></p>
+            </div>
+
+            <button type="button" onclick="sendEmails()">🚀 Start Sending</button>
+            <button type="button" class="secondary-btn" onclick="resetForm()">← Go Back</button>
+        </div>
+
+        <!-- Step 3: Progress -->
+        <div id="progressSection" class="progress-section" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Initializing...</div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsSection" style="display: none;">
+            <h2 style="margin-bottom: 15px;">📋 Results</h2>
+            <div id="resultsList"></div>
+            <div id="resultsActions" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>window.CURRENT_USER = {{ user_info|tojson }};</script>
+
+    <script>
+        let uploadedData = null;
+        const CURRENT_USER = window.CURRENT_USER || {is_authenticated:false};
+
+        // Pre-fill template if available
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (CURRENT_USER.is_authenticated && CURRENT_USER.template) {
+                    const ta = document.getElementById('messageTemplate');
+                    if (ta && !ta.value) ta.value = CURRENT_USER.template;
+                }
+                if (CURRENT_USER.is_authenticated && CURRENT_USER.subject) {
+                    const subjectInput = document.getElementById('emailSubject');
+                    if (subjectInput && !subjectInput.value) {
+                        subjectInput.value = CURRENT_USER.subject;
+                    }
+                }
+                // Hide password input if user has a stored app password
+                if (CURRENT_USER.is_authenticated && CURRENT_USER.has_app_password) {
+                    const senderEmail = document.getElementById('senderEmail');
+                    const senderPasswordGroup = document.getElementById('senderPasswordGroup');
+                    if (senderEmail) {
+                        senderEmail.value = CURRENT_USER.gmail_address || '';
+                        if (CURRENT_USER.gmail_address) {
+                            senderEmail.readOnly = true;
+                            senderEmail.style.backgroundColor = '#f4f6ff';
+                        }
+                    }
+                    if (senderPasswordGroup) senderPasswordGroup.style.display = 'none';
+                }
+            } catch (e) {
+                // ignore
+            }
+        });
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status show ${type}`;
+            setTimeout(() => statusEl.classList.remove('show'), 5000);
+        }
+
+        function previewMessage() {
+            const message = document.getElementById('messageTemplate').value;
+            if (!message) {
+                showStatus('Please enter a message', 'error');
+                return;
+            }
+
+            const sampleEmail = 'john@gmail.com';
+            fetch('/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    sample_email: sampleEmail
+                })
+            })
+            .then(async (r) => {
+                if (!r.ok) {
+                    const txt = await r.text();
+                    throw new Error(txt || r.statusText);
+                }
+                // Protect against invalid/empty JSON responses
+                try {
+                    return await r.json();
+                } catch (err) {
+                    const txt = await r.text().catch(() => '');
+                    throw new Error(txt || 'Invalid JSON response');
+                }
+            })
+            .then(data => {
+                const preview = document.getElementById('previewSection');
+                document.getElementById('previewContent').textContent = data.preview;
+                preview.classList.add('show');
+            })
+            .catch(e => showStatus('Error previewing: ' + e.message, 'error'));
+        }
+
+        function uploadFiles() {
+            const excelFile = document.getElementById('excelFile').files[0];
+            const pdfFiles = document.getElementById('pdfFolder').files;
+            const message = document.getElementById('messageTemplate').value;
+
+            if (!excelFile || !pdfFiles.length || !message) {
+                showStatus('Please fill all fields', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('excel_file', excelFile);
+            for (let file of pdfFiles) {
+                formData.append('pdf_folder', file);
+            }
+            formData.append('message', message);
+
+            showStatus('⏳ Uploading and validating files...', 'info');
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async (r) => {
+                if (!r.ok) {
+                    const txt = await r.text().catch(() => r.statusText);
+                    throw new Error(txt || r.statusText);
+                }
+                try {
+                    return await r.json();
+                } catch (err) {
+                    const txt = await r.text().catch(() => '');
+                    throw new Error(txt || 'Invalid JSON response from server');
+                }
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+
+                uploadedData = data.send_data;
+                document.getElementById('emailCount').textContent = data.emails_count;
+                document.getElementById('pdfCount').textContent = data.pdfs_count;
+
+                showStatus(`✅ Validated: ${data.emails_count} emails, ${data.pdfs_count} PDFs`, 'success');
+
+                document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('configSection').style.display = 'block';
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+            })
+            .catch(e => showStatus('Error: ' + e.message, 'error'));
+        }
+
+        function sendEmails() {
+            const senderEmail = document.getElementById('senderEmail').value;
+            const senderPassword = document.getElementById('senderPassword').value;
+            const isAuth = CURRENT_USER && CURRENT_USER.is_authenticated;
+            const useBackground = isAuth && CURRENT_USER.has_app_password && senderEmail;
+
+            const payload = {
+                emails: uploadedData.emails,
+                pdf_paths: uploadedData.pdf_paths,
+                message: uploadedData.message,
+                subject: document.getElementById('emailSubject').value || '',
+                sender_email: senderEmail
+            };
+
+            if (!useBackground) {
+                if (!senderEmail || !senderPassword) {
+                    showStatus('Please enter email credentials', 'error');
+                    return;
+                }
+                payload.sender_password = senderPassword;
+                // Synchronous direct send
+                document.getElementById('configSection').style.display = 'none';
+                document.getElementById('progressSection').style.display = 'block';
+                document.getElementById('step2').classList.add('completed');
+                document.getElementById('step3').classList.add('active');
+                showStatus('🚀 Sending emails...', 'info');
+                fetch('/send-emails', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json())
+                .then(results => displayResults(results))
+                .catch(e => {
+                    showStatus('Error sending emails: ' + e, 'error');
+                    document.getElementById('progressSection').style.display = 'none';
+                    document.getElementById('configSection').style.display = 'block';
+                });
+                return;
+            }
+
+            // Authenticated with saved app password: use background job
+            document.getElementById('configSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step3').classList.add('active');
+            showStatus('🚀 Queuing background job...', 'info');
+
+            fetch('/start-send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async r => {
+                if (!r.ok) {
+                    const txt = await r.text().catch(()=>r.statusText);
+                    throw new Error(txt || r.statusText);
+                }
+                return r.json();
+            })
+            .then(data => {
+                const jid = data.job_id;
+                pollJob(jid);
+            })
+            .catch(e => {
+                showStatus('Error starting job: ' + e.message, 'error');
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('configSection').style.display = 'block';
+            });
+        }
+
+        function pollJob(jid) {
+            const fill = document.getElementById('progressFill');
+            const text = document.getElementById('progressText');
+            const interval = setInterval(() => {
+                fetch('/job-status/' + jid)
+                .then(r => r.json())
+                .then(j => {
+                    if (!j.total) return;
+                    const done = (j.sent || 0) + (j.failed || 0);
+                    const pct = Math.round((done / j.total) * 100);
+                    fill.style.width = pct + '%';
+                    text.textContent = `Progress: ${done}/${j.total} (${pct}%)`;
+                    if (j.status === 'finished') {
+                        clearInterval(interval);
+                                document.getElementById('progressSection').style.display = 'none';
+                        const results = {
+                            job_id: jid,
+                            sent: j.sent_emails || Array(j.sent).fill(''),
+                            failed: j.errors || [],
+                            total: j.total
+                        };
+                        displayResults(results);
+                    }
+                })
+                .catch(() => {});
+            }, 1000);
+        }
+
+        function displayResults(results) {
+            const sent = results.sent || [];
+            const failed = results.failed || [];
+            const total = results.total || 0;
+            const jid = results.job_id;
+
+            let resultsHTML = `
+                <div style="background: #ddf4e9; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                    <strong>✅ Sent Successfully: ${sent.length}/${total}</strong>
+            `;
+
+            if (failed.length > 0) {
+                resultsHTML += `<br><br><strong style="color: #9a2f2c;">❌ Failed: ${failed.length}</strong>`;
+            }
+            resultsHTML += '</div>';
+
+            if (sent.length > 0) {
+                resultsHTML += '<div style="margin-bottom: 15px;"><strong>Sent to:</strong>';
+                sent.forEach(email => {
+                    resultsHTML += `<div class="results-item results-sent">✓ ${email}</div>`;
+                });
+                resultsHTML += '</div>';
+            }
+
+            let actionsHTML = '';
+            if (failed.length > 0) {
+                resultsHTML += '<div><strong>Failed:</strong>';
+                failed.forEach(item => {
+                    resultsHTML += `<div class="results-item results-failed">✗ ${item.email} - ${item.reason}</div>`;
+                });
+                resultsHTML += '</div>';
+                if (jid) {
+                    actionsHTML = `<button type="button" onclick="retryFailed('${jid}')" style="background: #00796b; color: white; padding: 12px 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700;">🔄 Retry Failed Emails</button>`;
+                } else {
+                    actionsHTML = `<div style="color: #23554e; font-size: 14px;">Some emails failed to send. Please correct the issue and try again.</div>`;
+                }
+            } else {
+                actionsHTML = `<button type="button" class="secondary-btn" onclick="resetForm()">🔄 Send Another Batch</button>`;
+            }
+
+            document.getElementById('resultsList').innerHTML = resultsHTML;
+            document.getElementById('resultsActions').innerHTML = actionsHTML;
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function retryFailed(jid) {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Retrying failed emails...';
+            showStatus('🔄 Retrying failed emails...', 'info');
+
+            fetch('/retry-send/' + jid, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.job_id) {
+                    pollJob(data.job_id);
+                } else {
+                    showStatus('Error retrying: ' + (data.error || 'Unknown error'), 'error');
+                    document.getElementById('progressSection').style.display = 'none';
+                    document.getElementById('resultsSection').style.display = 'block';
+                }
+            })
+            .catch(e => {
+                showStatus('Error retrying: ' + e.message, 'error');
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'block';
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('status').classList.remove('show');
+            document.getElementById('excelFile').value = '';
+            document.getElementById('pdfFolder').value = '';
+            document.getElementById('messageTemplate').value = '';
+            document.getElementById('senderEmail').value = '';
+            document.getElementById('senderPassword').value = '';
+            document.getElementById('previewSection').classList.remove('show');
+            
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('configSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
+            document.getElementById('step1').classList.add('active');
+            
+            uploadedData = null;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Payment - NotifySphere</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-kNU1PPrFZ9NGAZWMI9qw7s8LCj6y6mRPzDv9s0qKZXPRYY0573OslTWyhtT5y9YZ+h1G1p6qMxz9Iu1hW+1m9g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e7f7f4 0%, #d9f1ec 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #0f3d35;
+      }
+      .card {
+        width: 100%;
+        max-width: 520px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.14);
+        padding: 38px;
+        border: 1px solid rgba(0, 121, 97, 0.08);
+      }
+      h1 {
+        margin-bottom: 16px;
+        font-size: 32px;
+        color: #004d40;
+      }
+      p {
+        margin-bottom: 18px;
+        color: #236055;
+        line-height: 1.75;
+      }
+      .highlight {
+        color: #00796b;
+        font-weight: 700;
+      }
+      .error {
+        margin-bottom: 16px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #fdecea;
+        color: #c0392b;
+      }
+      .hint {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #2f574e;
+      }
+      .hint a {
+        color: #00796b;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .hint a:hover {
+        text-decoration: underline;
+      }
+      button {
+        width: 100%;
+        padding: 14px 18px;
+        font-size: 16px;
+        font-weight: 700;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        background: #00796b;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+      }
+      button:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1><i class="fas fa-credit-card"></i> Activate Your Account</h1>
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %} {% if user %}
+      <p>
+        Welcome back, <span class="highlight">{{ user.username }}</span>. To
+        activate your account and use the NotifySphere system, complete the
+        <strong>$30</strong> payment for a 6-month subscription.
+      </p>
+      {% if not public_key %}
+      <div class="error">
+        Payment setup is not configured. Please contact the administrator.
+      </div>
+      {% else %}
+      <button id="pay-button">
+        <i class="fas fa-arrow-right"></i> Pay $30 Now
+      </button>
+      {% endif %}
+      <p class="hint">
+        After payment, your account will be activated immediately for six
+        months.
+      </p>
+      <p class="hint">
+        <a href="/logout">Switch account</a> if you need to pay with a different
+        login.
+      </p>
+      {% else %}
+      <p>
+        You must register or login before paying. Once registered, you will
+        complete the $30 payment to activate access.
+      </p>
+      <p class="hint">
+        First create an account, then complete payment from this page.
+      </p>
+      <p class="hint">
+        <a href="/register">Register now</a> or <a href="/login">Login</a>.
+      </p>
+      {% endif %}
+    </div>
+
+    <script>
+      const publicKey = "{{ public_key }}";
+      const amount = {{ amount if amount is defined else 30 }};
+      const currency = "{{ currency if currency is defined else 'USD' }}";
+
+      function verifyPayment(transactionId) {
+        fetch('/payment/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ transaction_id: transactionId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = '/';
+          } else {
+            alert(data.error || 'Payment verification failed. Please contact support.');
+          }
+        })
+        .catch(err => {
+          alert('Unable to verify payment. Please try again.');
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const payButton = document.getElementById('pay-button');
+        if (!payButton) return;
+        payButton.addEventListener('click', function() {
+          if (!publicKey) {
+            alert('Payment configuration is missing.');
+            return;
+          }
+
+          FlutterwaveCheckout({
+            public_key: publicKey,
+            tx_ref: 'notify-' + Date.now(),
+            amount: amount,
+            currency: currency,
+            payment_options: 'card,ussd,banktransfer,qr',
+            customer: {
+              email: '{{ user.gmail_address or '' }}',
+              name: '{{ user.username }}'
+            },
+            customizations: {
+              title: 'NotifySphere Subscription',
+              description: 'Pay $30 for 6 months access',
+              logo: 'https://www.salmidevpro.com.ng/favicon.ico'
+            },
+            callback: function(data) {
+              if (data.status === 'successful') {
+                verifyPayment(data.transaction_id);
+              } else {
+                alert('Payment was not completed. Please try again.');
+              }
+            },
+            onclose: function() {
+              console.log('Payment popup closed');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotifySphere | Email Automation for Cooperatives, Schools, NGOs</title>
+    <meta name="description" content="NotifySphere is a commercial bulk email platform for cooperatives, schools, NGOs, and companies. Send personalized PDF attachments using secure Gmail app passwords for only $30 every 6 months.">
+    <meta name="keywords" content="bulk email, personalized PDF emails, Gmail app password, email automation, cooperative email software, school notification system, NGO communication tool, enterprise email campaigns">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-kNU1PPrFZ9NGAZWMI9qw7s8LCj6y6mRPzDv9s0qKZXPRYY0573OslTWyhtT5y9YZ+h1G1p6qMxz9Iu1hW+1m9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #084d45;
+            background: #f4fbfb;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        nav {
+            background: #00796b;
+            padding: 20px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        nav .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+        }
+
+        nav .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        nav .logo i {
+            margin-right: 10px;
+        }
+
+        nav .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.25s ease;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #009688 0%, #26a69a 100%);
+            color: white;
+            padding: 100px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 620px;
+        }
+
+        .hero .container {
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            margin-bottom: 22px;
+            letter-spacing: -1px;
+            line-height: 1.05;
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 760px;
+            margin: 0 auto 36px;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 999px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #00796b;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-secondary:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+        }
+
+        .features {
+            padding: 80px 30px;
+            background: #f1fbfb;
+        }
+
+        .features .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 38px;
+            margin-bottom: 50px;
+            color: #004d40;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 34px;
+            border-radius: 20px;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 280px;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-icon {
+            font-size: 42px;
+            margin-bottom: 18px;
+            color: #009688;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 14px;
+            color: #00796b;
+        }
+
+        .feature-card p {
+            color: #4a4a4a;
+            line-height: 1.8;
+        }
+
+        .how-it-works {
+            padding: 80px 30px;
+            background: white;
+        }
+
+        .how-it-works .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 28px;
+            margin-top: 44px;
+        }
+
+        .step {
+            background: #e0f2ef;
+            padding: 30px;
+            border-radius: 18px;
+            border-left: 5px solid #00796b;
+            min-height: 220px;
+        }
+
+        .step-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #00796b;
+            margin-bottom: 16px;
+        }
+
+        .step-icon {
+            font-size: 28px;
+            color: #00796b;
+            margin-bottom: 16px;
+        }
+
+        .step h4 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #00332b;
+        }
+
+        .step p {
+            color: #4b4b4b;
+            line-height: 1.75;
+        }
+
+        .info-section {
+            padding: 80px 30px;
+            background: linear-gradient(135deg, #00796b 0%, #009688 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .info-section .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .info-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .info-section p {
+            font-size: 18px;
+            margin-bottom: 28px;
+            opacity: 0.96;
+            line-height: 1.75;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+        }
+
+        .pricing-card h3 {
+            font-size: 28px;
+            margin-bottom: 18px;
+        }
+
+        .pricing-price {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .pricing-note {
+            font-size: 16px;
+            opacity: 0.95;
+            line-height: 1.7;
+        }
+
+        footer {
+            background: #00332d;
+            color: #f1f8f7;
+            padding: 48px 20px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1fr);
+            gap: 32px;
+            align-items: start;
+        }
+
+        .footer-brand {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-brand i {
+            color: #26a69a;
+            font-size: 30px;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.88);
+            line-height: 1.8;
+            max-width: 640px;
+        }
+
+        .footer-links {
+            display: grid;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .footer-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #a7ffeb;
+        }
+
+        .footer-note {
+            margin-top: 28px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            nav .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo"><i class="fas fa-paper-plane"></i> NotifySphere</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+                <a href="/register">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Email Automation for Cooperatives, Schools, NGOs and Businesses</h1>
+            <p>Send personalized bulk emails with secure Gmail app password authentication and automated PDF delivery. NotifySphere is built to help organizations communicate faster, smarter, and more reliably.</p>
+            <div class="cta-buttons">
+                <a href="/payment" class="btn btn-primary"><i class="fas fa-arrow-right"></i> Start Your 6-Month Plan</a>
+                <a href="#features" class="btn btn-secondary"><i class="fas fa-info-circle"></i> See Features</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Why NotifySphere Works for Commercial Teams</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+                    <h3>Designed for Cooperatives</h3>
+                    <p>Improve member communication, share financial reports, and distribute meeting documents with one secure bulk email platform.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-school"></i></div>
+                    <h3>Ideal for Schools</h3>
+                    <p>Deliver student letters, admission notices, and exam results as attachments that reach every parent and guardian.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-hands-helping"></i></div>
+                    <h3>Perfect for NGOs</h3>
+                    <p>Send donor updates, campaign reports, and program notices with secure email delivery built for mission-driven teams.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-file-csv"></i></div>
+                    <h3>Excel-Based Lists</h3>
+                    <p>Import recipients from Excel instantly. No manual contact entry or data conversion is required.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
+                    <h3>Automated PDF Attachment Matching</h3>
+                    <p>Match PDFs to recipients automatically so every email arrives with the right document attached.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Monitor Every Send</h3>
+                    <p>Track each campaign with real-time progress, success counts, and failure reports from the dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How the Commercial Workflow Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="step-number">1</div>
+                    <h4>Create Your Organization Account</h4>
+                    <p>Register your business, cooperative, or NGO account and secure your login immediately.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="step-number">2</div>
+                    <h4>Save Gmail & App Password</h4>
+                    <p>Use a Gmail address and secure app password to power reliable SMTP sending without OAuth complexity.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon"><i class="fas fa-file-upload"></i></div>
+                    <div class="step-number">3</div>
+                    <h4>Upload Recipient Data</h4>
+                    <p>Upload an Excel email list and PDF files, then let the app pair recipients with their documents automatically.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon"><i class="fas fa-paper-plane"></i></div>
+                    <div class="step-number">4</div>
+                    <h4>Send, Track, Repeat</h4>
+                    <p>Run campaigns, monitor results, and renew your subscription every six months for continued commercial access.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="container">
+            <h2>Commercial Pricing for Organizations</h2>
+            <p>NotifySphere is monetized for commercial users at an affordable business subscription. The platform is optimized for organizations that need secure, repeatable, and scalable email delivery.</p>
+            <div class="pricing-card">
+                <h3>Organization Access</h3>
+                <div class="pricing-price">$30</div>
+                <p class="pricing-note">Billed every 6 months for continuous use, ideal for schools, cooperatives, NGOs, and corporate teams.</p>
+                <p>Use NotifySphere to deliver membership updates, school notices, donor communications, payroll letters, and business reports.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <div>
+                <div class="footer-brand"><i class="fas fa-paper-plane"></i> NotifySphere</div>
+                <p class="footer-text">NotifySphere delivers secure, personalized bulk email campaigns for cooperatives, schools, NGOs, and businesses. Activate your 6-month subscription to start sending reports, invoices, notices, and membership documents with confidence.</p>
+                <p class="footer-note">Built by <a href="https://www.salmidevpro.com.ng" target="_blank" rel="noopener noreferrer">Abdulazeez Abdulsalam Olamilekan</a>. Trusted email automation for commercial organizations.</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://www.salmidevpro.com.ng" target="_blank"><i class="fas fa-globe"></i> www.salmidevpro.com.ng</a>
+                <a href="mailto:salmidevpro@gmail.com"><i class="fas fa-envelope"></i> salmidevpro@gmail.com</a>
+                <a href="tel:+2348167659890"><i class="fas fa-phone"></i> +234 816 765 9890</a>
+                <a href="https://wa.me/13138446113" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp +1 (313) 844-6113</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

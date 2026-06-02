@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Email Sender</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e7f7f4 0%, #d9f1ec 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #0f3d35;
+      }
+      .card {
+        width: 100%;
+        max-width: 480px;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+        padding: 38px 36px;
+        border: 1px solid rgba(0, 121, 97, 0.08);
+      }
+      h1 {
+        margin-bottom: 18px;
+        font-size: 34px;
+        color: #004d40;
+        letter-spacing: -0.5px;
+      }
+      label {
+        display: block;
+        margin-bottom: 12px;
+        color: #1f4e45;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      input {
+        width: 100%;
+        padding: 14px 16px;
+        margin-top: 8px;
+        border: 1px solid #c8e3dd;
+        border-radius: 14px;
+        font-size: 15px;
+        background: #f7fdfb;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.25s ease;
+      }
+      input:focus {
+        outline: none;
+        border-color: #26a69a;
+        box-shadow: 0 0 0 4px rgba(38, 166, 154, 0.14);
+        background: #ffffff;
+      }
+      button {
+        width: 100%;
+        margin-top: 22px;
+        padding: 14px 16px;
+        background: #00796b;
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-2px);
+        background: #00695c;
+      }
+      button:active {
+        transform: translateY(0);
+      }
+      .hint {
+        margin-top: 18px;
+        font-size: 14px;
+        color: #23554e;
+        text-align: center;
+      }
+      .hint a {
+        color: #00796b;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .hint a:hover {
+        text-decoration: underline;
+      }
+      .error {
+        margin-bottom: 18px;
+        color: #922b21;
+        background: #fdecea;
+        border: 1px solid #f5c6cb;
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Login</h1>
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+      <form method="post">
+        <label
+          >Username
+          <input
+            style="width: 90%"
+            name="username"
+            autocomplete="username"
+            required
+          />
+        </label>
+        <label
+          >Password
+          <input
+            style="width: 90%"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <button type="submit">Login</button>
+      </form>
+      <p class="hint">
+        Your account access is limited until the $30 payment is completed.
+      </p>
+      <p class="hint">No account? <a href="/register">Register now</a></p>
+      <p class="hint">Admin? <a href="/admin-login">Login here</a></p>
+    </div>
+  </body>
+</html>

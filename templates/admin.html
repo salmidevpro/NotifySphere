@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard - Email Sender</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #eaf6f2;
+        min-height: 100vh;
+        padding: 30px;
+        color: #0f3d35;
+      }
+      .card {
+        max-width: 1120px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 34px;
+        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(0, 121, 97, 0.08);
+      }
+      h1 {
+        margin-bottom: 8px;
+        color: #004d40;
+      }
+      p {
+        color: #31524b;
+      }
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 26px;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        background: #00796b;
+        color: #fff;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+      }
+      .button.secondary-btn {
+        background: #dff3ef;
+        color: #0f3d35;
+        border: 1px solid #c8e6e1;
+        margin-left: 10px;
+      }
+      .table-wrapper {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+      }
+      th,
+      td {
+        padding: 14px 14px;
+        text-align: left;
+        border-bottom: 1px solid #e6f1ef;
+      }
+      th {
+        background: #f0fbf8;
+        color: #23554e;
+        font-weight: 700;
+      }
+      tr:hover {
+        background: #f5fbf8;
+      }
+      .badge {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .badge-ok {
+        background: #def3ea;
+        color: #0f5c47;
+      }
+      .badge-warn {
+        background: #fff6dc;
+        color: #9d6c1b;
+      }
+      .badge-bad {
+        background: #fde7e8;
+        color: #a1291f;
+      }
+      .small {
+        font-size: 13px;
+        color: #5f6f85;
+      }
+      .action-form {
+        display: inline;
+      }
+      .action-btn {
+        border: none;
+        background: #f4fcfb;
+        color: #00796b;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 8px 12px;
+        border-radius: 10px;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+      .action-btn:hover {
+        transform: translateY(-1px);
+        background: #e2f3ef;
+      }
+      .action-btn.danger {
+        color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="topbar">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Manage users and monitor background send jobs.</p>
+        </div>
+        <div>
+          <a class="button" href="/">Back to app</a>
+          <form
+            class="action-form"
+            method="post"
+            action="/admin/clear-jobs"
+            style="display: inline"
+          >
+            <button type="submit" class="button secondary-btn">
+              Clear finished jobs
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <section class="table-wrapper">
+        <h2 style="margin-bottom: 14px; color: #34495e">Users</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Admin</th>
+              <th>Gmail</th>
+              <th>App password</th>
+              <th>Template</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>{{ user.username }}</td>
+              <td>
+                <span
+                  class="badge {{ 'badge-ok' if user.is_admin else 'badge-warn' }}"
+                  >{{ 'Yes' if user.is_admin else 'No' }}</span
+                >
+              </td>
+              <td>{{ user.gmail_address or '—' }}</td>
+              <td>
+                {% if user.app_password_enc %}<span class="badge badge-ok"
+                  >Saved</span
+                >{% else %}<span class="badge badge-warn">No</span>{% endif %}
+              </td>
+              <td class="small">
+                {% set user_template = user.template or '' %}
+                {{ user_template[:80] ~ ('...' if user_template|length > 80 else '') or '—' }}
+              </td>
+              <td>
+                {% if current_user.id != user.id %}
+                <form
+                  class="action-form"
+                  method="post"
+                  action="/admin/toggle-admin/{{ user.id }}"
+                >
+                  <button type="submit" class="action-btn">
+                    {{ 'Demote' if user.is_admin else 'Promote' }}
+                  </button>
+                </form>
+                <form
+                  class="action-form"
+                  method="post"
+                  action="/admin/delete-user/{{ user.id }}"
+                >
+                  <button type="submit" class="action-btn danger">
+                    Delete
+                  </button>
+                </form>
+                {% else %}
+                <span class="small">Current admin</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="table-wrapper">
+        <h2 style="margin-bottom: 14px; color: #34495e">Jobs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Sent</th>
+              <th>Failed</th>
+              <th>Started</th>
+              <th>Finished</th>
+              <th>Errors</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tbody id="job-rows">
+            {% for job in jobs %}
+            <tr>
+              <td>{{ job.id }}</td>
+              <td>
+                <span class="badge {{ 'badge-ok' if job.status == 'finished' else 'badge-warn' if job.status == 'running' else 'badge-bad' }}">{{ job.status }}</span>
+              </td>
+              <td>{{ job.total }}</td>
+              <td>{{ job.sent }}</td>
+              <td>{{ job.failed }}</td>
+              <td>{{ job.started_at or '—' }}</td>
+              <td>{{ job.finished_at or '—' }}</td>
+              <td class="small">{{ job.errors|length }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </tbody>
+        </table>
+      </section>
+
+      <script>
+        // Poll admin jobs API and update table rows
+        async function fetchJobs() {
+          try {
+            const res = await fetch('/admin/jobs');
+            if (!res.ok) return;
+            const jobs = await res.json();
+            const tbody = document.getElementById('job-rows');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            jobs.forEach(job => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${job.id}</td>
+                <td><span class="badge ${job.status === 'finished' ? 'badge-ok' : job.status === 'running' ? 'badge-warn' : 'badge-bad'}">${job.status}</span></td>
+                <td>${job.total || 0}</td>
+                <td>${job.sent || 0}</td>
+                <td>${job.failed || 0}</td>
+                <td>${job.started_at || '—'}</td>
+                <td>${job.finished_at || '—'}</td>
+                <td class="small">${(job.errors || []).length}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } catch (e) {
+            // ignore
+          }
+        }
+        // initial fetch and poll every 5s
+        fetchJobs();
+        setInterval(fetchJobs, 5000);
+      </script>
+    </div>
+  </body>
+</html>
