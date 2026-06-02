@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Payment - NotifySphere</title>
+    <link rel="icon" href="{{ url_for('img_file', filename='email-favicon.jpeg') }}" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -113,6 +114,10 @@
         Payment setup is not configured. Please contact the administrator.
       </div>
       {% else %}
+      {% if not user.gmail_address %}
+      <p class="hint">Please enter the email you want to use for payment (required by the payment provider):</p>
+      <input id="payment-email" type="email" placeholder="you@example.com" style="width:100%;padding:12px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:12px;" />
+      {% endif %}
       <button id="pay-button">
         <i class="fas fa-arrow-right"></i> Pay $30 Now
       </button>
@@ -166,41 +171,65 @@
       }
 
       document.addEventListener('DOMContentLoaded', function() {
-        const payButton = document.getElementById('pay-button');
-        if (!payButton) return;
-        payButton.addEventListener('click', function() {
-          if (!publicKey) {
-            alert('Payment configuration is missing.');
-            return;
+          const payButton = document.getElementById('pay-button');
+          if (!payButton) return;
+          const serverEmail = "{{ user.gmail_address or '' }}";
+          const username = "{{ user.username or '' }}";
+          const emailInput = document.getElementById('payment-email');
+
+          function isValidEmail(e) {
+            return /^\S+@\S+\.\S+$/.test(e);
           }
 
-          FlutterwaveCheckout({
-            public_key: publicKey,
-            tx_ref: 'notify-' + Date.now(),
-            amount: amount,
-            currency: currency,
-            payment_options: 'card,ussd,banktransfer,qr',
-            customer: {
-              email: '{{ user.gmail_address or '' }}',
-              name: '{{ user.username }}'
-            },
-            customizations: {
-              title: 'NotifySphere Subscription',
-              description: 'Pay $30 for 6 months access',
-              logo: 'https://www.salmidevpro.com.ng/favicon.ico'
-            },
-            callback: function(data) {
-              if (data.status === 'successful') {
-                verifyPayment(data.transaction_id);
-              } else {
-                alert('Payment was not completed. Please try again.');
-              }
-            },
-            onclose: function() {
-              console.log('Payment popup closed');
+          if (!serverEmail && emailInput) {
+            payButton.disabled = !isValidEmail(emailInput.value || '');
+            emailInput.addEventListener('input', () => {
+              payButton.disabled = !isValidEmail(emailInput.value);
+            });
+          }
+
+          payButton.addEventListener('click', function() {
+            if (!publicKey) {
+              alert('Payment configuration is missing.');
+              return;
             }
+
+            let customerEmail = serverEmail;
+            if (!customerEmail) {
+              if (!emailInput || !isValidEmail(emailInput.value)) {
+                alert('Please enter a valid email address for payment.');
+                return;
+              }
+              customerEmail = emailInput.value.trim();
+            }
+
+            FlutterwaveCheckout({
+              public_key: publicKey,
+              tx_ref: 'notify-' + Date.now(),
+              amount: amount,
+              currency: currency,
+              payment_options: 'card,ussd,banktransfer,qr',
+              customer: {
+                email: customerEmail,
+                name: username
+              },
+              customizations: {
+                title: 'NotifySphere Subscription',
+                description: 'Pay $30 for 6 months access',
+                logo: '{{ url_for('img_file', filename="email-favicon.jpeg") }}'
+              },
+              callback: function(data) {
+                if (data.status === 'successful') {
+                  verifyPayment(data.transaction_id);
+                } else {
+                  alert('Payment was not completed. Please try again.');
+                }
+              },
+              onclose: function() {
+                console.log('Payment popup closed');
+              }
+            });
           });
-        });
       });
     </script>
   </body>

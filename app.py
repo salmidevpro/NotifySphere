@@ -4,7 +4,7 @@ import json
 import urllib.request
 import urllib.error
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, abort
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, abort, send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge, HTTPException
 from werkzeug.utils import secure_filename
 import openpyxl
@@ -130,6 +130,12 @@ def get_job(jid):
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Serve images placed in the repo-level `img/` folder (e.g. email-favicon.jpeg)
+@app.route('/img/<path:filename>')
+def img_file(filename):
+    img_dir = Path(__file__).resolve().parent / 'img'
+    return send_from_directory(str(img_dir), filename)
+
 ALLOWED_EXCEL = {'xlsx', 'xls'}
 ALLOWED_PDF = {'pdf'}
 
@@ -188,6 +194,19 @@ class User(db.Model, UserMixin):
             return fernet.decrypt(self.app_password_enc.encode()).decode()
         except Exception:
             return None
+
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tx_id = db.Column(db.String(128), unique=True, nullable=False)
+    tx_ref = db.Column(db.String(128), nullable=True)
+    amount = db.Column(db.Float, nullable=True)
+    currency = db.Column(db.String(16), nullable=True)
+    status = db.Column(db.String(64), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    customer_email = db.Column(db.String(256), nullable=True)
+    raw_response = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 @login_manager.user_loader
@@ -415,7 +434,7 @@ def payment():
 @login_required
 def payment_verify():
     data = request.get_json() or {}
-    transaction_id = data.get('transaction_id')
+    transaction_id = data.get('transaction_id') or data.get('tx_id')
     if not transaction_id:
         return jsonify({'error': 'Missing transaction_id'}), 400
     if not FLUTTERWAVE_SECRET_KEY:
@@ -430,7 +449,11 @@ def payment_verify():
         with urllib.request.urlopen(req, timeout=20) as resp:
             response_data = json.loads(resp.read().decode())
     except urllib.error.HTTPError as exc:
-        return jsonify({'error': f'Unable to verify payment: {exc.read().decode()}'}), 500
+        try:
+            err_body = exc.read().decode()
+        except Exception:
+            err_body = str(exc)
+        return jsonify({'error': f'Unable to verify payment: {err_body}'}), 500
     except Exception as exc:
         return jsonify({'error': str(exc)}), 500
 
@@ -438,16 +461,73 @@ def payment_verify():
         return jsonify({'error': 'Payment verification failed.'}), 400
 
     transaction = response_data.get('data', {})
-    if transaction.get('status') != 'successful':
+    tx_status = transaction.get('status')
+    if tx_status != 'successful':
         return jsonify({'error': 'Payment not completed.'}), 400
 
-    amount_paid = float(transaction.get('amount', 0))
+    # Extract data safely
+    tx_id = str(transaction.get('id') or transaction.get('transaction_id') or transaction_id)
+    tx_ref = transaction.get('tx_ref') or transaction.get('txRef')
+    amount_paid = float(transaction.get('amount', 0) or 0)
+    currency = transaction.get('currency') or transaction.get('currency_code') or 'USD'
+    customer = transaction.get('customer') or {}
+    customer_email = customer.get('email') or customer.get('customer_email') or None
+
+    # Check amount - enforce minimum expected amount
     if amount_paid < 30:
         return jsonify({'error': 'Insufficient payment amount.'}), 400
 
-    current_user.paid_until = datetime.utcnow() + timedelta(days=180)
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Payment verified. Your account is now active.'})
+    # Idempotency: skip if we've already recorded this transaction
+    existing = Payment.query.filter_by(tx_id=tx_id).first()
+    if existing:
+        # If already successful and linked to a user, ensure user's paid_until is up-to-date
+        if existing.user_id:
+            try:
+                user = User.query.get(existing.user_id)
+                if user:
+                    if not user.paid_until or user.paid_until < datetime.utcnow():
+                        user.paid_until = datetime.utcnow() + timedelta(days=180)
+                        db.session.commit()
+            except Exception:
+                pass
+        return jsonify({'success': True, 'message': 'Payment already recorded.'})
+
+    # Create payment record
+    try:
+        payment = Payment(
+            tx_id=tx_id,
+            tx_ref=tx_ref,
+            amount=amount_paid,
+            currency=currency,
+            status=tx_status,
+            customer_email=customer_email,
+            raw_response=json.dumps(response_data)
+        )
+        # Try to associate with current user or by customer email
+        associated_user = None
+        if current_user and getattr(current_user, 'is_authenticated', False):
+            associated_user = current_user
+        elif customer_email:
+            associated_user = User.query.filter_by(gmail_address=customer_email).first()
+
+        if associated_user:
+            payment.user_id = associated_user.id
+            # Ensure user has an email stored
+            if not associated_user.gmail_address and customer_email:
+                associated_user.gmail_address = customer_email
+            # Extend or set paid_until by 180 days from now or from existing expiry
+            if associated_user.paid_until and associated_user.paid_until > datetime.utcnow():
+                associated_user.paid_until = associated_user.paid_until + timedelta(days=180)
+            else:
+                associated_user.paid_until = datetime.utcnow() + timedelta(days=180)
+
+        db.session.add(payment)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to record payment: {str(exc)}'}), 500
+
+    return jsonify({'success': True, 'message': 'Payment verified and recorded. Your account is now active.'})
 
 
 @app.route('/logout')
